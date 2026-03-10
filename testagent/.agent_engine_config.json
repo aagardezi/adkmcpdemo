@@ -1,0 +1,5 @@
+{
+    "psc_interface_config": {
+        "network_attachment": "projects/genaillentsearch/regions/us-central1/networkAttachments/agent-engine-attachment"
+    }
+}
