@@ -60,21 +60,8 @@ root_agent = LlmAgent(
         "You are an agent helping with time related queries"
     ),
     instruction=(
-        # "You are an investment analyst agent that creates an analysis of assets and stock"
-        # "You use the tools and subagents at your disposal to get the data and summarise the data"
-        # "Include a detailed summary in the response"
-        # "use the get_current_date tool to get the current data in order to use with any of the subagents"
-        # "use the symbol_lookup_agent to get a stock symbol from a company name"
-        # "use the news subagent to get company news"
-        # "In the response include a detailed section on the news"
-        # "If the user does not specify a start date or end date, use the current date as the start date using the get_current_date tool"
-        # "use the date from 6 months ago as the end date"
-        # "If the user specifies the date as a duration, use get_current_date to get the start date and calculate it"
-        # "make sure to always use the get_current_date tool to do the date calculation"
-        # "use all the sub agnets to create a report on the investment"
         """You are an agent that helps with time related queries 
                         """
-
     ),
 
 )
