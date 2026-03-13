@@ -108,10 +108,8 @@ Using the `google-adk` Python library, the reasoning engine logic must be config
    Create/Edit this file directly in the `testagent` folder so the ADK build engine injects the backend networking at execution time:
    ```json
    {
-     "reasoning_engine_kwargs": {
-       "psc_interface_config": {
-         "network_attachment": "projects/YOUR_PROJECT_ID/regions/us-central1/networkAttachments/agent-engine-attachment"
-       }
+     "psc_interface_config": {
+       "network_attachment": "projects/YOUR_PROJECT_ID/regions/us-central1/networkAttachments/agent-engine-attachment"
      }
    }
    ```
