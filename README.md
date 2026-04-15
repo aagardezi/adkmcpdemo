@@ -13,23 +13,23 @@ To bridge the private isolated server space with the Google-managed Agent Engine
 
 ```mermaid
 graph TD
-    subgraph Cloud_Platform [Google Cloud Platform]
-        subgraph Vertex_AI [Vertex AI (Google Managed)]
-            Agent[ADK Agent / Reasoning Engine]
+    subgraph Cloud_Platform ["Google Cloud Platform"]
+        subgraph Vertex_AI ["Vertex AI (Google Managed)"]
+            Agent["ADK Agent / Reasoning Engine"]
         end
 
-        subgraph Customer_VPC [Customer VPC Network (time-mcp-vpc)]
-            NA[PSC Network Attachment<br/>(agent-engine-attachment)]
+        subgraph Customer_VPC ["Customer VPC Network (time-mcp-vpc)"]
+            NA["PSC Network Attachment<br/>(agent-engine-attachment)"]
             
-            subgraph Subnet [Subnet (time-mcp-subnet)<br/>10.0.0.0/24]
+            subgraph Subnet ["Subnet (time-mcp-subnet)<br/>10.0.0.0/24"]
                 direction TB
-                FW[Firewall Rule<br/>Allow TCP 8000 from 10.0.0.0/24]
+                FW["Firewall Rule<br/>Allow TCP 8000 from 10.0.0.0/24"]
                 
-                subgraph GCE_VM [GCE VM (time-mcp-vm)<br/>IP: 10.0.0.2]
+                subgraph GCE_VM ["GCE VM (time-mcp-vm)<br/>IP: 10.0.0.2"]
                     direction TB
-                    Systemd[systemd daemon]
-                    Uvicorn[Uvicorn ASGI Server]
-                    MCP[Time MCP Server]
+                    Systemd["systemd daemon"]
+                    Uvicorn["Uvicorn ASGI Server"]
+                    MCP["Time MCP Server"]
                     
                     Systemd --> Uvicorn
                     Uvicorn --> MCP
