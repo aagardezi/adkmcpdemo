@@ -61,19 +61,19 @@ graph TD
     end
 
     %% Detailed Interaction Steps
-    Agent -->| "1. Init: HTTP GET http://10.0.0.2:8000/sse" | NA
+    Agent -->|1. Init: HTTP GET http://10.0.0.2:8000/sse| NA
     NA --> FW
-    FW -->| "Route via PSC" | Uvicorn
-    Uvicorn -->| "Establish SSE Stream" | MCP_App
+    FW -->|Route via PSC| Uvicorn
+    Uvicorn -->|Establish SSE Stream| MCP_App
     
-    MCP_App -->| "2. SSE Event: List Tools & Schema" | Agent
+    MCP_App -->|2. SSE Event: List Tools & Schema| Agent
     
-    Agent -->| "3. Tool Call: HTTP POST to /messages" | NA
+    Agent -->|3. Tool Call: HTTP POST to /messages| NA
     NA --> FW
-    FW -->| "Execute Action" | Uvicorn
-    Uvicorn -->| "Starlette Mount('/messages')" | MCP_App
+    FW -->|Execute Action| Uvicorn
+    Uvicorn -->|Starlette Mount /messages| MCP_App
     
-    MCP_App -->| "4. SSE Event: Tool Result" | Agent
+    MCP_App -->|4. SSE Event: Tool Result| Agent
 
     %% Apply Classes
     class Vertex_AI managed;
