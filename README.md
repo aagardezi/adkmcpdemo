@@ -9,6 +9,44 @@ To bridge the private isolated server space with the Google-managed Agent Engine
 * **Vertex AI Agent Engine**: The serverless orchestrator hosting the ADK Reasoning Engine (`testagent`).
 * **Private Service Connect (PSC)**: A robust Network Attachment that allows Vertex AI to route requests directly into `10.0.0.0/24` (the VPC subnet) without traversing the public internet.
 
+## Architecture Diagram
+
+```mermaid
+graph TD
+    subgraph Cloud_Platform [Google Cloud Platform]
+        subgraph Vertex_AI [Vertex AI (Google Managed)]
+            Agent[ADK Agent / Reasoning Engine]
+        end
+
+        subgraph Customer_VPC [Customer VPC Network (time-mcp-vpc)]
+            NA[PSC Network Attachment<br/>(agent-engine-attachment)]
+            
+            subgraph Subnet [Subnet (time-mcp-subnet)<br/>10.0.0.0/24]
+                direction TB
+                FW[Firewall Rule<br/>Allow TCP 8000 from 10.0.0.0/24]
+                
+                subgraph GCE_VM [GCE VM (time-mcp-vm)<br/>IP: 10.0.0.2]
+                    direction TB
+                    Systemd[systemd daemon]
+                    Uvicorn[Uvicorn ASGI Server]
+                    MCP[Time MCP Server]
+                    
+                    Systemd --> Uvicorn
+                    Uvicorn --> MCP
+                end
+            end
+        end
+    end
+
+    Agent -->|1. Secure Connection via PSC| NA
+    NA -->|2. Network Bridge| FW
+    FW -->|3. Port 8000| GCE_VM
+    
+    style Vertex_AI fill:#e1f5fe,stroke:#0288d1,stroke-width:2px
+    style Customer_VPC fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+    style GCE_VM fill:#fffde7,stroke:#fbc02d,stroke-width:2px
+```
+
 ---
 
 ## Deployment Steps
