@@ -13,38 +13,72 @@ To bridge the private isolated server space with the Google-managed Agent Engine
 
 ```mermaid
 graph TD
-    subgraph Cloud_Platform ["Google Cloud Platform"]
-        subgraph Vertex_AI ["Vertex AI (Google Managed)"]
-            Agent["ADK Agent / Reasoning Engine"]
+    %% Color Definitions
+    classDef managed fill:#e8f0fe,stroke:#1a73e8,stroke-width:2px,color:#174ea6;
+    classDef network fill:#e6f4ea,stroke:#137333,stroke-width:2px,color:#137333;
+    classDef compute fill:#fef7e0,stroke:#b06000,stroke-width:2px,color:#b06000;
+    classDef component fill:#ffffff,stroke:#dadce0,stroke-width:1px,color:#3c4043;
+
+    subgraph Cloud_Platform["Google Cloud Platform"]
+        direction TB
+
+        subgraph Vertex_AI["Vertex AI (Google Managed)"]
+            direction TB
+            Agent["ADK Reasoning Engine<br/>(testagent)"]:::component
+            AgentConfig["Config: .agent_engine_config.json<br/>Points to Network Attachment"]:::component
+            Agent --- AgentConfig
         end
 
-        subgraph Customer_VPC ["Customer VPC Network (time-mcp-vpc)"]
-            NA["PSC Network Attachment<br/>(agent-engine-attachment)"]
+        subgraph Customer_Project["Customer Project"]
+            direction TB
             
-            subgraph Subnet ["Subnet (time-mcp-subnet)<br/>10.0.0.0/24"]
+            subgraph Customer_VPC["Custom VPC (time-mcp-vpc)"]
                 direction TB
-                FW["Firewall Rule<br/>Allow TCP 8000 from 10.0.0.0/24"]
                 
-                subgraph GCE_VM ["GCE VM (time-mcp-vm)<br/>IP: 10.0.0.2"]
+                NA["PSC Network Attachment<br/>(agent-engine-attachment)"]:::network
+                
+                subgraph Subnet["Isolated Subnet (10.0.0.0/24)"]
                     direction TB
-                    Systemd["systemd daemon"]
-                    Uvicorn["Uvicorn ASGI Server"]
-                    MCP["Time MCP Server"]
                     
-                    Systemd --> Uvicorn
-                    Uvicorn --> MCP
+                    FW["Firewall Rule<br/>Allow TCP 8000 from 10.0.0.0/24"]:::network
+                    
+                    subgraph GCE_VM["GCE VM (time-mcp-vm)<br/>IP: 10.0.0.2"]
+                        direction TB
+                        
+                        subgraph MCP_Stack["MCP Server Stack"]
+                            direction TB
+                            Systemd["Systemd Daemon<br/>(mcp-time.service)"]:::component
+                            Uvicorn["Uvicorn ASGI Server<br/>Port 8000"]:::component
+                            MCP_App["Time MCP Server<br/>(mcp.server.sse)"]:::component
+                            
+                            Systemd --> Uvicorn
+                            Uvicorn --> MCP_App
+                        end
+                    end
                 end
             end
         end
     end
 
-    Agent -->|1. Secure Connection via PSC| NA
-    NA -->|2. Network Bridge| FW
-    FW -->|3. Port 8000| GCE_VM
+    %% Detailed Interaction Steps
+    Agent -->| "1. Init: HTTP GET http://10.0.0.2:8000/sse" | NA
+    NA --> FW
+    FW -->| "Route via PSC" | Uvicorn
+    Uvicorn -->| "Establish SSE Stream" | MCP_App
     
-    style Vertex_AI fill:#e1f5fe,stroke:#0288d1,stroke-width:2px
-    style Customer_VPC fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
-    style GCE_VM fill:#fffde7,stroke:#fbc02d,stroke-width:2px
+    MCP_App -->| "2. SSE Event: List Tools & Schema" | Agent
+    
+    Agent -->| "3. Tool Call: HTTP POST to /messages" | NA
+    NA --> FW
+    FW -->| "Execute Action" | Uvicorn
+    Uvicorn -->| "Starlette Mount('/messages')" | MCP_App
+    
+    MCP_App -->| "4. SSE Event: Tool Result" | Agent
+
+    %% Apply Classes
+    class Vertex_AI managed;
+    class Customer_VPC,Subnet network;
+    class GCE_VM compute;
 ```
 
 ---
